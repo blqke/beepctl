@@ -4,7 +4,10 @@ import { getConfig } from "./config.js";
 const DEFAULT_BASE_URL = "http://localhost:23373";
 
 // Re-export types from SDK
-export type { Account, AccountListResponse } from "@beeper/desktop-api/resources/accounts/accounts.js";
+export type {
+	Account,
+	AccountListResponse,
+} from "@beeper/desktop-api/resources/accounts/accounts.js";
 export type { Chat, ChatListResponse } from "@beeper/desktop-api/resources/chats/chats.js";
 export type { Message } from "@beeper/desktop-api/resources/shared.js";
 

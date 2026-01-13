@@ -53,7 +53,8 @@ beep search "meeting tomorrow"
 
 # Send a message
 beep send <chat-id> "Hello!"
-beep send <chat-id> "Test" --dry-run
+beep send myself "Quick note"  # Send to yourself
+beep send <chat-id> "Thanks!" --reply-to <message-id>  # Reply to message
 ```
 
 ## Development

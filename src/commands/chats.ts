@@ -55,7 +55,7 @@ export const chatsCommand = new Command("chats")
 					const preview = truncate(chat.preview.text, 50);
 					console.log(kleur.dim(`   💬 ${preview}`));
 				}
-				
+
 				if (i < chats.length - 1) {
 					console.log(SEPARATOR);
 				}

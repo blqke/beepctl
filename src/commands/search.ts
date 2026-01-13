@@ -48,7 +48,7 @@ export const searchCommand = new Command("search")
 			if (chats.length > 0) {
 				console.log(kleur.bold(`\n💬 Matching Chats (${chats.length})`));
 				console.log(SEPARATOR);
-				
+
 				for (let i = 0; i < chats.length; i++) {
 					const chat = chats[i];
 					const num = kleur.dim(`${i + 1}.`);
@@ -63,7 +63,7 @@ export const searchCommand = new Command("search")
 			if (messages.length > 0) {
 				console.log(kleur.bold(`\n📨 Matching Messages (${messages.length})`));
 				console.log(SEPARATOR);
-				
+
 				for (let i = 0; i < messages.length; i++) {
 					const msg = messages[i];
 					const num = kleur.dim(`${i + 1}.`);
@@ -71,10 +71,12 @@ export const searchCommand = new Command("search")
 					const network = networkMap.get(msg.accountID) || msg.accountID;
 					const time = new Date(msg.timestamp).toLocaleString();
 
-					console.log(`${num} ${kleur.cyan(sender)} ${kleur.dim(`[${network}]`)} ${kleur.dim(`• ${time}`)}`);
+					console.log(
+						`${num} ${kleur.cyan(sender)} ${kleur.dim(`[${network}]`)} ${kleur.dim(`• ${time}`)}`,
+					);
 					console.log(`   ${highlightQuery(msg.text || "", query)}`);
 					console.log(kleur.dim(`   📁 ${msg.chatID}`));
-					
+
 					if (i < messages.length - 1) {
 						console.log(SEPARATOR);
 					}

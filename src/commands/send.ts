@@ -4,19 +4,43 @@ import { getClient } from "../lib/client.js";
 
 export const sendCommand = new Command("send")
 	.description("Send a message to a chat")
-	.argument("<chat-id>", "Chat ID to send message to")
+	.argument("<chat-id>", "Chat ID to send message to (or 'myself' for Note to self)")
 	.argument("<message>", "Message text to send")
 	.option("-q, --quiet", "Don't show confirmation")
+	.option("-r, --reply-to <message-id>", "Reply to a specific message")
 	.action(async (chatId: string, message: string, options) => {
 		try {
 			const client = getClient();
 
-			const sent = await client.messages.send(chatId, { text: message });
+			// Handle 'myself' keyword
+			if (chatId.toLowerCase() === "myself") {
+				const chats = [];
+				for await (const chat of client.chats.search({ query: "note to self" })) {
+					chats.push(chat);
+					break; // Only need first match
+				}
+
+				if (chats.length === 0) {
+					console.error(kleur.red("❌ 'Note to self' chat not found"));
+					console.error(kleur.dim("   Create a 'Note to self' chat in Beeper Desktop first."));
+					process.exit(1);
+				}
+
+				chatId = chats[0].id;
+			}
+
+			const sent = await client.messages.send(chatId, {
+				text: message,
+				replyToMessageID: options.replyTo,
+			});
 
 			if (!options.quiet) {
 				console.log(kleur.green("✅ Message sent!"));
 				console.log(kleur.dim(`   ID: ${sent.pendingMessageID}`));
 				console.log(kleur.dim(`   Chat: ${sent.chatID}`));
+				if (options.replyTo) {
+					console.log(kleur.dim(`   Reply to: ${options.replyTo}`));
+				}
 			}
 		} catch (error) {
 			handleError(error);
@@ -28,6 +52,10 @@ function handleError(error: unknown): void {
 		if (error.message.includes("ECONNREFUSED")) {
 			console.error(kleur.red("❌ Cannot connect to Beeper Desktop API"));
 			console.error(kleur.dim("   Make sure Beeper Desktop is running with API enabled."));
+		} else if (error.message.includes("403") && error.message.includes("write")) {
+			console.error(kleur.red(`❌ Error: ${error.message}`));
+			console.error(kleur.dim("   Enable write permissions in Beeper Desktop:"));
+			console.error(kleur.dim("   Settings → Developers → Edit your token → Enable 'write' scope"));
 		} else {
 			console.error(kleur.red(`❌ Error: ${error.message}`));
 		}
