@@ -1,6 +1,6 @@
 # beepcli 🐝
 
-CLI for [Beeper Desktop API](https://developers.beeper.com/desktop-api) - unified messaging from your terminal.
+CLI for [Beeper Desktop API](https://developers.beeper.com/desktop-api) - unified messaging from your terminal. Give your AI agents the power to chat across all your messaging platforms.
 
 ## Requirements
 
