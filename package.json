@@ -1,0 +1,34 @@
+{
+  "name": "beepcli",
+  "version": "0.1.0",
+  "description": "CLI for Beeper Desktop API - unified messaging from terminal",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "beep": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "binary": "bun build --compile src/cli.ts --outfile beep"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "kleur": "^4.1.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.11.0"
+}
