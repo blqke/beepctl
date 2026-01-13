@@ -61,11 +61,11 @@ export const searchCommand = new Command("search")
 
 function highlightQuery(text: string, query: string): string {
 	const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
-	return text.replace(regex, kleur.yellow("$1"));
+	return text.replaceAll(regex, kleur.yellow("$1"));
 }
 
 function escapeRegex(str: string): string {
-	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return str.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function handleError(error: unknown): void {

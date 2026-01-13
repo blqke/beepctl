@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getClient, BeeperDesktop } from "../src/index.js";
+import { BeeperDesktop, getClient } from "../src/index.js";
 
 describe("BeeperClient", () => {
 	it("should create client with getClient()", () => {

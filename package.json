@@ -12,8 +12,10 @@
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
+    "lint": "biome check . && oxlint",
+    "lint:fix": "biome check --write . && oxlint --fix",
+    "lint:biome": "biome check .",
+    "lint:oxlint": "oxlint",
     "binary": "bun build --compile src/cli.ts --outfile beep"
   },
   "dependencies": {
@@ -24,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",
     "@types/node": "^22.0.0",
+    "oxlint": "^1.39.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.0",
     "vitest": "^4.0.0"
