@@ -1,25 +1,51 @@
 // Beeper API Types
 
-export interface Account {
+export interface AccountUser {
 	id: string;
-	service: string;
-	name?: string;
-	avatarUrl?: string;
+	email?: string;
+	fullName?: string;
+	displayText?: string;
+	username?: string;
+	isSelf?: boolean;
+}
+
+export interface Account {
+	accountID: string;
+	network: string;
+	user?: AccountUser;
+}
+
+export interface ChatPreview {
+	id: string;
+	chatID: string;
+	accountID: string;
+	senderID: string;
+	senderName?: string;
+	timestamp: string;
+	text: string;
+	isSender?: boolean;
 }
 
 export interface Chat {
 	id: string;
-	accountId: string;
-	name: string;
-	lastMessage?: Message;
+	localChatID?: string;
+	accountID: string;
+	network?: string;
+	title?: string;
+	type?: string;
+	lastActivity?: string;
 	unreadCount?: number;
-	avatarUrl?: string;
+	isArchived?: boolean;
+	isMuted?: boolean;
+	isPinned?: boolean;
+	preview?: ChatPreview;
 }
 
 export interface Message {
 	id: string;
-	chatId: string;
-	senderId: string;
+	chatID: string;
+	accountID: string;
+	senderID: string;
 	senderName?: string;
 	text: string;
 	timestamp: string;

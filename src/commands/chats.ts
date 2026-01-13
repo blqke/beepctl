@@ -9,7 +9,7 @@ export const chatsCommand = new Command("chats")
 	.action(async (options) => {
 		try {
 			const client = getClient();
-			const limit = parseInt(options.limit, 10);
+			const limit = Number.parseInt(options.limit, 10);
 
 			const chats = options.search
 				? await client.searchChats(options.search)
@@ -20,19 +20,20 @@ export const chatsCommand = new Command("chats")
 				return;
 			}
 
-			const title = options.search ? `🔍 Chats matching "${options.search}"` : `💬 Recent Chats`;
+			const title = options.search ? `🔍 Chats matching "${options.search}"` : "💬 Recent Chats";
 
 			console.log(kleur.bold(`\n${title} (${chats.length})\n`));
 
 			for (const chat of chats) {
-				const name = kleur.bold(chat.name || "Unknown");
+				const name = kleur.bold(chat.title || "Unknown");
+				const network = kleur.dim(`[${chat.network || chat.accountID}]`);
 				const unread = chat.unreadCount ? kleur.red(` (${chat.unreadCount} unread)`) : "";
 
-				console.log(`  ${name}${unread}`);
+				console.log(`  ${name} ${network}${unread}`);
 				console.log(kleur.dim(`    ID: ${chat.id}`));
 
-				if (chat.lastMessage) {
-					const preview = truncate(chat.lastMessage.text, 50);
+				if (chat.preview?.text) {
+					const preview = truncate(chat.preview.text, 50);
 					console.log(kleur.dim(`    Last: ${preview}`));
 				}
 				console.log();

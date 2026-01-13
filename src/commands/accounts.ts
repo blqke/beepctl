@@ -18,10 +18,10 @@ export const accountsCommand = new Command("accounts")
 			console.log(kleur.bold(`\n📱 Connected Accounts (${accounts.length})\n`));
 
 			for (const account of accounts) {
-				const name = account.name || account.id;
-				const service = kleur.cyan(account.service);
-				console.log(`  ${service} ${kleur.bold(name)}`);
-				console.log(kleur.dim(`    ID: ${account.id}\n`));
+				const name = account.user?.fullName || account.user?.displayText || account.accountID;
+				const network = kleur.cyan(account.network);
+				console.log(`  ${network} ${kleur.bold(name)}`);
+				console.log(kleur.dim(`    ID: ${account.accountID}\n`));
 			}
 		} catch (error) {
 			handleError(error);

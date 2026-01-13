@@ -38,54 +38,48 @@ export class BeeperClient {
 		return response.json() as Promise<T>;
 	}
 
-	// Accounts
+	// Accounts - returns array directly
 	async listAccounts(): Promise<Account[]> {
-		const result = await this.fetch<{ data: Account[] }>("/v1/accounts");
-		return result.data;
+		return this.fetch<Account[]>("/v1/accounts");
 	}
 
-	// Chats
+	// Chats - returns { items: [...] }
 	async listChats(limit = 20): Promise<Chat[]> {
-		const result = await this.fetch<{ data: Chat[] }>(`/v1/chats?limit=${limit}`);
-		return result.data;
+		const result = await this.fetch<{ items: Chat[] }>(`/v1/chats?limit=${limit}`);
+		return result.items;
 	}
 
 	async getChat(chatId: string): Promise<Chat> {
-		const result = await this.fetch<{ data: Chat }>(`/v1/chats/${encodeURIComponent(chatId)}`);
-		return result.data;
+		return this.fetch<Chat>(`/v1/chats/${encodeURIComponent(chatId)}`);
 	}
 
 	async searchChats(query: string): Promise<Chat[]> {
-		const result = await this.fetch<{ data: Chat[] }>(
+		const result = await this.fetch<{ items: Chat[] }>(
 			`/v1/chats/search?q=${encodeURIComponent(query)}`,
 		);
-		return result.data;
+		return result.items;
 	}
 
-	// Messages
+	// Messages - returns { items: [...] }
 	async listMessages(chatId: string, limit = 50): Promise<Message[]> {
-		const result = await this.fetch<{ data: Message[] }>(
+		const result = await this.fetch<{ items: Message[] }>(
 			`/v1/chats/${encodeURIComponent(chatId)}/messages?limit=${limit}`,
 		);
-		return result.data;
+		return result.items;
 	}
 
 	async sendMessage(chatId: string, text: string): Promise<Message> {
-		const result = await this.fetch<{ data: Message }>(
-			`/v1/chats/${encodeURIComponent(chatId)}/messages`,
-			{
-				method: "POST",
-				body: JSON.stringify({ text }),
-			},
-		);
-		return result.data;
+		return this.fetch<Message>(`/v1/chats/${encodeURIComponent(chatId)}/messages`, {
+			method: "POST",
+			body: JSON.stringify({ text }),
+		});
 	}
 
 	async searchMessages(query: string): Promise<Message[]> {
-		const result = await this.fetch<{ data: Message[] }>(
+		const result = await this.fetch<{ items: Message[] }>(
 			`/v1/messages/search?q=${encodeURIComponent(query)}`,
 		);
-		return result.data;
+		return result.items;
 	}
 
 	// Global search

@@ -9,7 +9,7 @@ export const searchCommand = new Command("search")
 	.action(async (query: string, options) => {
 		try {
 			const client = getClient();
-			const limit = parseInt(options.limit, 10);
+			const limit = Number.parseInt(options.limit, 10);
 
 			console.log(kleur.dim(`Searching for "${query}"...`));
 
@@ -24,7 +24,7 @@ export const searchCommand = new Command("search")
 			if (results.chats.length > 0) {
 				console.log(kleur.bold(`\n💬 Matching Chats (${results.chats.length})\n`));
 				for (const chat of results.chats.slice(0, 5)) {
-					console.log(`  ${kleur.bold(chat.name)}`);
+					console.log(`  ${kleur.bold(chat.title || "Unknown")}`);
 					console.log(kleur.dim(`    ID: ${chat.id}\n`));
 				}
 			}
@@ -33,12 +33,12 @@ export const searchCommand = new Command("search")
 			if (results.messages.length > 0) {
 				console.log(kleur.bold(`\n📨 Matching Messages (${results.messages.length})\n`));
 				for (const msg of results.messages.slice(0, limit)) {
-					const sender = msg.senderName || msg.senderId;
+					const sender = msg.senderName || msg.senderID;
 					const time = new Date(msg.timestamp).toLocaleString();
 
 					console.log(`  ${kleur.cyan(sender)} ${kleur.dim(`• ${time}`)}`);
 					console.log(`  ${highlightQuery(msg.text, query)}`);
-					console.log(kleur.dim(`    Chat: ${msg.chatId}\n`));
+					console.log(kleur.dim(`    Chat: ${msg.chatID}\n`));
 				}
 			}
 		} catch (error) {
