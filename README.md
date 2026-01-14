@@ -70,6 +70,11 @@ beep send <chat-id> "Hello!"
 beep send myself "Quick note"  # Send to yourself
 beep send <chat-id> "Thanks!" --reply-to <message-id>  # Reply to message
 
+# Archive/unarchive chats
+beep archive <chat-id>              # Archive a chat
+beep archive <chat-id> --unarchive  # Unarchive a chat
+beep archive work                   # Use alias to archive
+
 # Alias management (shortcuts for chat IDs)
 beep alias list                    # List all aliases
 beep alias add work <chat-id>      # Create alias
@@ -148,10 +153,11 @@ src/
 ├── commands/        # CLI commands
 │   ├── auth.ts      # Token management
 │   ├── accounts.ts  # List accounts
+│   ├── alias.ts     # Alias management
+│   ├── archive.ts   # Archive/unarchive chats
 │   ├── chats.ts     # Browse chats
 │   ├── search.ts    # Search messages/chats
-│   ├── send.ts      # Send messages
-│   └── alias.ts     # Alias management
+│   └── send.ts      # Send messages
 └── lib/             # Core logic
     ├── client.ts    # Beeper API client wrapper
     ├── config.ts    # Config file management (~/.config/beepcli/)
