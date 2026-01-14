@@ -52,3 +52,48 @@ export function parseRelativeDate(input: string): string {
 		`Invalid date format: "${input}". Use: "1h ago", "2d ago", "3w ago", "1mo ago", "yesterday", or "today"`,
 	);
 }
+
+/**
+ * Parse future time strings into Unix timestamp in milliseconds
+ * Supports formats like "30m", "1h", "2d", "1w", "tomorrow"
+ */
+export function parseFutureTime(input: string): number {
+	const now = Date.now();
+
+	// Handle "tomorrow"
+	if (input.toLowerCase() === "tomorrow") {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		tomorrow.setHours(9, 0, 0, 0); // Default to 9am
+		return tomorrow.getTime();
+	}
+
+	// Handle relative time patterns: "30m", "1h", "2d", "1w"
+	const match = input.match(/^(\d+)(m|h|d|w)$/i);
+
+	if (match) {
+		const amount = Number.parseInt(match[1], 10);
+		const unit = match[2].toLowerCase();
+
+		switch (unit) {
+			case "m":
+				return now + amount * 60 * 1000;
+			case "h":
+				return now + amount * 60 * 60 * 1000;
+			case "d":
+				return now + amount * 24 * 60 * 60 * 1000;
+			case "w":
+				return now + amount * 7 * 24 * 60 * 60 * 1000;
+		}
+	}
+
+	// Try parsing as ISO date
+	const parsed = Date.parse(input);
+	if (!Number.isNaN(parsed)) {
+		return parsed;
+	}
+
+	throw new Error(
+		`Invalid time format: "${input}". Use: "30m", "1h", "2d", "1w", "tomorrow", or ISO date`,
+	);
+}
