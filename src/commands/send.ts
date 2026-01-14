@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import kleur from "kleur";
+import { resolveAlias } from "../lib/aliases.js";
 import { getClient } from "../lib/client.js";
 import { getConfig } from "../lib/config.js";
-import { resolveAlias } from "../lib/aliases.js";
 
 export const sendCommand = new Command("send")
 	.description("Send a message to a chat")
@@ -39,7 +39,9 @@ export const sendCommand = new Command("send")
 			} else {
 				// Not an alias, not 'myself', not a direct chat ID
 				console.error(kleur.red(`❌ Chat '${chatId}' not found`));
-				console.error(kleur.dim(`   Use chat ID directly or add alias: beep alias add ${chatId} <chatId>`));
+				console.error(
+					kleur.dim(`   Use chat ID directly or add alias: beep alias add ${chatId} <chatId>`),
+				);
 				process.exit(1);
 			}
 

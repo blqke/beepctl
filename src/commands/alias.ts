@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import kleur from "kleur";
-import { getConfig, saveConfig } from "../lib/config.js";
 import { isValidAliasName, isValidChatId } from "../lib/aliases.js";
+import { getConfig, saveConfig } from "../lib/config.js";
 
 export const aliasCommand = new Command("alias").description("Manage chat aliases");
 
@@ -25,7 +25,9 @@ aliasCommand
 	.action((name: string, chatId: string) => {
 		// Validate alias name
 		if (!isValidAliasName(name)) {
-			console.error(kleur.red("❌ Alias name must be alphanumeric (underscores allowed, no spaces)"));
+			console.error(
+				kleur.red("❌ Alias name must be alphanumeric (underscores allowed, no spaces)"),
+			);
 			process.exit(1);
 		}
 
@@ -40,7 +42,9 @@ aliasCommand
 
 		// Warn if overwriting
 		if (aliases[name]) {
-			console.log(kleur.yellow(`⚠️  Alias '${name}' already exists (${aliases[name]}). Overwriting...`));
+			console.log(
+				kleur.yellow(`⚠️  Alias '${name}' already exists (${aliases[name]}). Overwriting...`),
+			);
 		}
 
 		aliases[name] = chatId;

@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import kleur from "kleur";
+import { isValidChatId, resolveAlias } from "../lib/aliases.js";
 import type { Chat, Message } from "../lib/client.js";
 import { getClient } from "../lib/client.js";
 import { getConfig } from "../lib/config.js";
-import { isValidChatId, resolveAlias } from "../lib/aliases.js";
 import { parseRelativeDate } from "../lib/dates.js";
 
 // Visual separators
@@ -19,15 +19,11 @@ function parseArrayOption(value: string | string[]): string[] {
 	return value.split(",").map((s) => s.trim());
 }
 
-function validateMediaTypes(
-	types: string[],
-): Array<"any" | "video" | "image" | "link" | "file"> {
+function validateMediaTypes(types: string[]): Array<"any" | "video" | "image" | "link" | "file"> {
 	const valid = ["any", "video", "image", "link", "file"];
 	for (const type of types) {
 		if (!valid.includes(type)) {
-			throw new Error(
-				`Invalid media type: ${type}. Must be: ${valid.join(", ")}`,
-			);
+			throw new Error(`Invalid media type: ${type}. Must be: ${valid.join(", ")}`);
 		}
 	}
 	return types as Array<"any" | "video" | "image" | "link" | "file">;
@@ -101,7 +97,9 @@ export const searchCommand = new Command("search")
 						mediaTypes = undefined;
 					}
 				} catch (error) {
-					console.error(kleur.red(`❌ ${error instanceof Error ? error.message : "Invalid media type"}`));
+					console.error(
+						kleur.red(`❌ ${error instanceof Error ? error.message : "Invalid media type"}`),
+					);
 					process.exit(1);
 				}
 			}
@@ -114,7 +112,11 @@ export const searchCommand = new Command("search")
 				try {
 					dateAfter = parseRelativeDate(options.after);
 				} catch (error) {
-					console.error(kleur.red(`❌ Invalid --after date: ${error instanceof Error ? error.message : "Unknown error"}`));
+					console.error(
+						kleur.red(
+							`❌ Invalid --after date: ${error instanceof Error ? error.message : "Unknown error"}`,
+						),
+					);
 					console.error(kleur.dim("   Examples: '1d ago', '2h ago', 'yesterday', 'today'"));
 					process.exit(1);
 				}
@@ -124,7 +126,11 @@ export const searchCommand = new Command("search")
 				try {
 					dateBefore = parseRelativeDate(options.before);
 				} catch (error) {
-					console.error(kleur.red(`❌ Invalid --before date: ${error instanceof Error ? error.message : "Unknown error"}`));
+					console.error(
+						kleur.red(
+							`❌ Invalid --before date: ${error instanceof Error ? error.message : "Unknown error"}`,
+						),
+					);
 					console.error(kleur.dim("   Examples: '1d ago', '2h ago', 'yesterday', 'today'"));
 					process.exit(1);
 				}
