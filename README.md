@@ -1,4 +1,4 @@
-# beepcli 🐝
+# beepctl 🐝
 
 CLI for [Beeper Desktop API](https://developers.beeper.com/desktop-api) - unified messaging from your terminal. Give your AI agents the power to chat across all your messaging platforms.
 
@@ -13,13 +13,16 @@ CLI for [Beeper Desktop API](https://developers.beeper.com/desktop-api) - unifie
 ## Installation
 
 ```bash
+# From npm
+npm install -g beepctl
+
+# Or use directly with npx
+npx beepctl <command>
+
 # From source
 pnpm install
 pnpm build
 pnpm link --global
-
-# Or run directly
-pnpm dev -- <command>
 ```
 
 ## Setup

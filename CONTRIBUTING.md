@@ -11,7 +11,7 @@ Thanks for your interest in contributing!
 ## Setup
 
 ```bash
-git clone https://github.com/blqke/beepcli.git
+git clone https://github.com/blqke/beepctl.git
 cd beepcli
 pnpm install
 pnpm run build

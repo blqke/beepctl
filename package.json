@@ -1,6 +1,6 @@
 {
   "name": "beepctl",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for Beeper Desktop API - unified messaging from terminal",
   "license": "MIT",
   "type": "module",
@@ -43,12 +43,12 @@
   "packageManager": "pnpm@10.11.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blqke/beepcli.git"
+    "url": "git+https://github.com/blqke/beepctl.git"
   },
   "bugs": {
-    "url": "https://github.com/blqke/beepcli/issues"
+    "url": "https://github.com/blqke/beepctl/issues"
   },
-  "homepage": "https://github.com/blqke/beepcli#readme",
+  "homepage": "https://github.com/blqke/beepctl#readme",
   "author": "blqke",
   "keywords": [
     "cli",
