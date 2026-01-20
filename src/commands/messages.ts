@@ -126,6 +126,29 @@ export const messagesCommand = new Command("messages")
 				);
 				console.log(`   ${msg.text || kleur.dim("[no text]")}`);
 
+				// Display attachments
+				if (msg.attachments?.length) {
+					for (const att of msg.attachments) {
+						const icon =
+							att.type === "img"
+								? "🖼️"
+								: att.type === "video"
+									? "🎬"
+									: att.type === "audio"
+										? "🎵"
+										: "📎";
+						const size = att.fileSize ? ` (${formatSize(att.fileSize)})` : "";
+						const name = att.fileName || att.type || "attachment";
+						console.log(kleur.dim(`   ${icon} ${name}${size}`));
+					}
+				}
+
+				// Display reactions
+				if (msg.reactions?.length) {
+					const reacts = msg.reactions.map((r) => r.reactionKey).join(" ");
+					console.log(kleur.dim(`   ${reacts}`));
+				}
+
 				if (i < messages.length - 1) {
 					console.log(SEPARATOR);
 				}
@@ -135,6 +158,12 @@ export const messagesCommand = new Command("messages")
 			handleError(error);
 		}
 	});
+
+function formatSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes}B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
 
 function handleError(error: unknown): void {
 	if (error instanceof Error) {

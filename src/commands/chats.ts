@@ -4,6 +4,7 @@ import { isValidChatId, resolveAlias } from "../lib/aliases.js";
 import type { ChatListResponse } from "../lib/client.js";
 import { getClient } from "../lib/client.js";
 import { getConfig } from "../lib/config.js";
+import { parseRelativeDate } from "../lib/dates.js";
 
 // Visual separators
 const SEPARATOR = kleur.dim("─".repeat(50));
@@ -21,6 +22,11 @@ chatsCommand
 		"Filter by inbox: primary (default, non-archived), archive, low-priority, all",
 		"primary",
 	)
+	.option("-t, --type <type>", "Filter by chat type: single, group, any", "any")
+	.option("-u, --unread-only", "Show only unread chats")
+	.option("--scope <scope>", "Search scope: titles or participants", "titles")
+	.option("--activity-after <date>", "Chats with activity after date (e.g., '1d ago')")
+	.option("--activity-before <date>", "Chats with activity before date")
 	.action(async (options) => {
 		try {
 			const client = getClient();
@@ -28,17 +34,77 @@ chatsCommand
 
 			const chats: ChatListResponse[] = [];
 
-			// Use search() for inbox filtering, list() only for "all"
-			if (options.inbox === "all" && !options.search) {
+			// Parse activity dates if provided
+			let activityAfter: string | undefined;
+			let activityBefore: string | undefined;
+			if (options.activityAfter) {
+				try {
+					activityAfter = parseRelativeDate(options.activityAfter);
+				} catch (error) {
+					console.error(
+						kleur.red(
+							`Invalid --activity-after date: ${error instanceof Error ? error.message : "Unknown"}`,
+						),
+					);
+					process.exit(1);
+				}
+			}
+			if (options.activityBefore) {
+				try {
+					activityBefore = parseRelativeDate(options.activityBefore);
+				} catch (error) {
+					console.error(
+						kleur.red(
+							`Invalid --activity-before date: ${error instanceof Error ? error.message : "Unknown"}`,
+						),
+					);
+					process.exit(1);
+				}
+			}
+
+			// Check if we need search (any filter beyond basic list)
+			const needsSearch =
+				options.search ||
+				options.inbox !== "all" ||
+				options.type !== "any" ||
+				options.unreadOnly ||
+				activityAfter ||
+				activityBefore;
+
+			if (!needsSearch) {
 				for await (const chat of client.chats.list()) {
 					chats.push(chat);
 					if (chats.length >= limit) break;
 				}
 			} else {
-				const searchParams: { query?: string; inbox?: "primary" | "low-priority" | "archive" } = {};
+				const searchParams: {
+					query?: string;
+					inbox?: "primary" | "low-priority" | "archive";
+					type?: "single" | "group";
+					scope?: "titles" | "participants";
+					unreadOnly?: boolean;
+					lastActivityAfter?: string;
+					lastActivityBefore?: string;
+				} = {};
+
 				if (options.search) searchParams.query = options.search;
 				if (options.inbox && options.inbox !== "all") {
 					searchParams.inbox = options.inbox as "primary" | "low-priority" | "archive";
+				}
+				if (options.type && options.type !== "any") {
+					searchParams.type = options.type as "single" | "group";
+				}
+				if (options.scope) {
+					searchParams.scope = options.scope as "titles" | "participants";
+				}
+				if (options.unreadOnly) {
+					searchParams.unreadOnly = true;
+				}
+				if (activityAfter) {
+					searchParams.lastActivityAfter = activityAfter;
+				}
+				if (activityBefore) {
+					searchParams.lastActivityBefore = activityBefore;
 				}
 
 				for await (const chat of client.chats.search(searchParams)) {
@@ -58,7 +124,15 @@ chatsCommand
 			else if (options.inbox === "archive") title = "📦 Archived Chats";
 			else if (options.inbox === "low-priority") title = "📭 Low Priority Chats";
 
-			console.log(kleur.bold(`\n${title} (${chats.length})`));
+			// Add filter indicators
+			const filters: string[] = [];
+			if (options.type !== "any") filters.push(options.type);
+			if (options.unreadOnly) filters.push("unread");
+			if (activityAfter) filters.push(`after ${options.activityAfter}`);
+			if (activityBefore) filters.push(`before ${options.activityBefore}`);
+			const filterSuffix = filters.length > 0 ? kleur.dim(` [${filters.join(", ")}]`) : "";
+
+			console.log(kleur.bold(`\n${title} (${chats.length})`) + filterSuffix);
 			console.log(SEPARATOR);
 
 			for (let i = 0; i < chats.length; i++) {
