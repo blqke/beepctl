@@ -3,7 +3,6 @@ import { getConfig } from "./config.js";
 
 const DEFAULT_BASE_URL = "http://localhost:23373";
 
-// Re-export types from SDK
 export type {
 	Account,
 	AccountListResponse,

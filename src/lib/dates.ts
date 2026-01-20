@@ -1,93 +1,87 @@
-/**
- * Parse relative date strings into ISO 8601 format
- * Supports formats like "1h ago", "2d ago", "yesterday", "today"
- */
-export function parseRelativeDate(input: string): string {
-	const now = new Date();
+const MS_PER_MINUTE = 60 * 1000;
+const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+const MS_PER_WEEK = 7 * MS_PER_DAY;
 
-	// Handle "yesterday"
-	if (input.toLowerCase() === "yesterday") {
-		const yesterday = new Date(now);
-		yesterday.setDate(yesterday.getDate() - 1);
-		yesterday.setHours(0, 0, 0, 0);
-		return yesterday.toISOString();
-	}
-
-	// Handle "today"
-	if (input.toLowerCase() === "today") {
-		const today = new Date(now);
-		today.setHours(0, 0, 0, 0);
-		return today.toISOString();
-	}
-
-	// Handle relative time patterns: "1h ago", "2d ago", "3w ago", "1mo ago"
-	const match = input.match(/^(\d+)(h|d|w|mo)\s*ago$/i);
-
-	if (match) {
-		const amount = Number.parseInt(match[1], 10);
-		const unit = match[2].toLowerCase();
-
-		switch (unit) {
-			case "h": {
-				const date = new Date(now.getTime() - amount * 60 * 60 * 1000);
-				return date.toISOString();
-			}
-			case "d": {
-				const date = new Date(now.getTime() - amount * 24 * 60 * 60 * 1000);
-				return date.toISOString();
-			}
-			case "w": {
-				const date = new Date(now.getTime() - amount * 7 * 24 * 60 * 60 * 1000);
-				return date.toISOString();
-			}
-			case "mo": {
-				const date = new Date(now);
-				date.setMonth(date.getMonth() - amount);
-				return date.toISOString();
-			}
-		}
-	}
-
-	throw new Error(
-		`Invalid date format: "${input}". Use: "1h ago", "2d ago", "3w ago", "1mo ago", "yesterday", or "today"`,
-	);
+function startOfDay(date: Date): Date {
+	const result = new Date(date);
+	result.setHours(0, 0, 0, 0);
+	return result;
 }
 
 /**
- * Parse future time strings into Unix timestamp in milliseconds
- * Supports formats like "30m", "1h", "2d", "1w", "tomorrow"
+ * Parse relative date strings into ISO 8601 format.
+ * Supports: "1h ago", "2d ago", "3w ago", "1mo ago", "yesterday", "today"
+ */
+export function parseRelativeDate(input: string): string {
+	const now = new Date();
+	const normalized = input.toLowerCase();
+
+	if (normalized === "yesterday") {
+		const yesterday = startOfDay(now);
+		yesterday.setDate(yesterday.getDate() - 1);
+		return yesterday.toISOString();
+	}
+
+	if (normalized === "today") {
+		return startOfDay(now).toISOString();
+	}
+
+	const match = input.match(/^(\d+)(h|d|w|mo)\s*ago$/i);
+	if (!match) {
+		throw new Error(
+			`Invalid date format: "${input}". Use: "1h ago", "2d ago", "3w ago", "1mo ago", "yesterday", or "today"`,
+		);
+	}
+
+	const amount = Number.parseInt(match[1], 10);
+	const unit = match[2].toLowerCase();
+
+	if (unit === "mo") {
+		const date = new Date(now);
+		date.setMonth(date.getMonth() - amount);
+		return date.toISOString();
+	}
+
+	const msOffsets: Record<string, number> = {
+		h: MS_PER_HOUR,
+		d: MS_PER_DAY,
+		w: MS_PER_WEEK,
+	};
+
+	return new Date(now.getTime() - amount * msOffsets[unit]).toISOString();
+}
+
+/**
+ * Parse future time strings into Unix timestamp in milliseconds.
+ * Supports: "30m", "1h", "2d", "1w", "tomorrow", or ISO date
  */
 export function parseFutureTime(input: string): number {
 	const now = Date.now();
+	const normalized = input.toLowerCase();
 
-	// Handle "tomorrow"
-	if (input.toLowerCase() === "tomorrow") {
+	if (normalized === "tomorrow") {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
-		tomorrow.setHours(9, 0, 0, 0); // Default to 9am
+		tomorrow.setHours(9, 0, 0, 0);
 		return tomorrow.getTime();
 	}
 
-	// Handle relative time patterns: "30m", "1h", "2d", "1w"
 	const match = input.match(/^(\d+)(m|h|d|w)$/i);
-
 	if (match) {
 		const amount = Number.parseInt(match[1], 10);
 		const unit = match[2].toLowerCase();
 
-		switch (unit) {
-			case "m":
-				return now + amount * 60 * 1000;
-			case "h":
-				return now + amount * 60 * 60 * 1000;
-			case "d":
-				return now + amount * 24 * 60 * 60 * 1000;
-			case "w":
-				return now + amount * 7 * 24 * 60 * 60 * 1000;
-		}
+		const msOffsets: Record<string, number> = {
+			m: MS_PER_MINUTE,
+			h: MS_PER_HOUR,
+			d: MS_PER_DAY,
+			w: MS_PER_WEEK,
+		};
+
+		return now + amount * msOffsets[unit];
 	}
 
-	// Try parsing as ISO date
 	const parsed = Date.parse(input);
 	if (!Number.isNaN(parsed)) {
 		return parsed;

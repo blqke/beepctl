@@ -1,13 +1,18 @@
 {
-  "name": "beepcli",
+  "name": "beepctl",
   "version": "0.1.0",
   "description": "CLI for Beeper Desktop API - unified messaging from terminal",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "beep": "dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "prepublishOnly": "pnpm run build",
     "build": "tsc",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",

@@ -5,13 +5,12 @@ import type { ChatListResponse } from "../lib/client.js";
 import { getClient } from "../lib/client.js";
 import { getConfig } from "../lib/config.js";
 import { parseRelativeDate } from "../lib/dates.js";
+import { handleError } from "../lib/errors.js";
 
-// Visual separators
 const SEPARATOR = kleur.dim("─".repeat(50));
 
 export const chatsCommand = new Command("chats").description("Manage chats");
 
-// List subcommand (default behavior)
 chatsCommand
 	.command("list", { isDefault: true })
 	.description("List recent chats")
@@ -32,135 +31,22 @@ chatsCommand
 			const client = getClient();
 			const limit = Number.parseInt(options.limit, 10);
 
-			const chats: ChatListResponse[] = [];
+			const activityAfter = parseDateOption(options.activityAfter, "--activity-after");
+			const activityBefore = parseDateOption(options.activityBefore, "--activity-before");
 
-			// Parse activity dates if provided
-			let activityAfter: string | undefined;
-			let activityBefore: string | undefined;
-			if (options.activityAfter) {
-				try {
-					activityAfter = parseRelativeDate(options.activityAfter);
-				} catch (error) {
-					console.error(
-						kleur.red(
-							`Invalid --activity-after date: ${error instanceof Error ? error.message : "Unknown"}`,
-						),
-					);
-					process.exit(1);
-				}
-			}
-			if (options.activityBefore) {
-				try {
-					activityBefore = parseRelativeDate(options.activityBefore);
-				} catch (error) {
-					console.error(
-						kleur.red(
-							`Invalid --activity-before date: ${error instanceof Error ? error.message : "Unknown"}`,
-						),
-					);
-					process.exit(1);
-				}
-			}
-
-			// Check if we need search (any filter beyond basic list)
-			const needsSearch =
-				options.search ||
-				options.inbox !== "all" ||
-				options.type !== "any" ||
-				options.unreadOnly ||
-				activityAfter ||
-				activityBefore;
-
-			if (!needsSearch) {
-				for await (const chat of client.chats.list()) {
-					chats.push(chat);
-					if (chats.length >= limit) break;
-				}
-			} else {
-				const searchParams: {
-					query?: string;
-					inbox?: "primary" | "low-priority" | "archive";
-					type?: "single" | "group";
-					scope?: "titles" | "participants";
-					unreadOnly?: boolean;
-					lastActivityAfter?: string;
-					lastActivityBefore?: string;
-				} = {};
-
-				if (options.search) searchParams.query = options.search;
-				if (options.inbox && options.inbox !== "all") {
-					searchParams.inbox = options.inbox as "primary" | "low-priority" | "archive";
-				}
-				if (options.type && options.type !== "any") {
-					searchParams.type = options.type as "single" | "group";
-				}
-				if (options.scope) {
-					searchParams.scope = options.scope as "titles" | "participants";
-				}
-				if (options.unreadOnly) {
-					searchParams.unreadOnly = true;
-				}
-				if (activityAfter) {
-					searchParams.lastActivityAfter = activityAfter;
-				}
-				if (activityBefore) {
-					searchParams.lastActivityBefore = activityBefore;
-				}
-
-				for await (const chat of client.chats.search(searchParams)) {
-					chats.push(chat as ChatListResponse);
-					if (chats.length >= limit) break;
-				}
-			}
+			const chats = await fetchChats(client, options, limit, activityAfter, activityBefore);
 
 			if (chats.length === 0) {
 				console.log(kleur.yellow("No chats found."));
 				return;
 			}
 
-			let title = "📥 Inbox";
-			if (options.search) title = `🔍 Chats matching "${options.search}"`;
-			else if (options.inbox === "all") title = "💬 All Chats";
-			else if (options.inbox === "archive") title = "📦 Archived Chats";
-			else if (options.inbox === "low-priority") title = "📭 Low Priority Chats";
-
-			// Add filter indicators
-			const filters: string[] = [];
-			if (options.type !== "any") filters.push(options.type);
-			if (options.unreadOnly) filters.push("unread");
-			if (activityAfter) filters.push(`after ${options.activityAfter}`);
-			if (activityBefore) filters.push(`before ${options.activityBefore}`);
-			const filterSuffix = filters.length > 0 ? kleur.dim(` [${filters.join(", ")}]`) : "";
-
-			console.log(kleur.bold(`\n${title} (${chats.length})`) + filterSuffix);
-			console.log(SEPARATOR);
-
-			for (let i = 0; i < chats.length; i++) {
-				const chat = chats[i];
-				const num = kleur.dim(`${i + 1}.`);
-				const name = kleur.bold(chat.title || chat.description || "Unknown");
-				const network = kleur.dim(`[${chat.network || chat.accountID}]`);
-				const unread = chat.unreadCount ? kleur.red(` (${chat.unreadCount} unread)`) : "";
-
-				console.log(`${num} ${name} ${network}${unread}`);
-				console.log(kleur.dim(`   ID: ${chat.id}`));
-
-				if (chat.preview?.text) {
-					const preview = truncate(chat.preview.text, 50);
-					console.log(kleur.dim(`   💬 ${preview}`));
-				}
-
-				if (i < chats.length - 1) {
-					console.log(SEPARATOR);
-				}
-			}
-			console.log();
+			printChatList(chats, options, activityAfter, activityBefore);
 		} catch (error) {
 			handleError(error);
 		}
 	});
 
-// Show subcommand
 chatsCommand
 	.command("show")
 	.description("Show detailed info about a chat")
@@ -169,23 +55,12 @@ chatsCommand
 	.action(async (chatId: string, options) => {
 		try {
 			const client = getClient();
-			const config = getConfig();
-
-			const resolved = resolveAlias(chatId, config);
-			let targetChatId: string;
-			if (resolved) {
-				targetChatId = resolved;
-			} else if (isValidChatId(chatId)) {
-				targetChatId = chatId;
-			} else {
-				console.error(kleur.red(`❌ Invalid chat ID or alias: ${chatId}`));
-				process.exit(1);
-			}
+			const targetChatId = resolveChatId(chatId);
 
 			const maxParticipantCount = Number.parseInt(options.participants, 10);
 			const chat = await client.chats.retrieve(targetChatId, { maxParticipantCount });
 
-			console.log(kleur.bold("\n📋 Chat Details"));
+			console.log(kleur.bold("\nChat Details"));
 			console.log(SEPARATOR);
 			console.log(`${kleur.dim("ID:")}          ${chat.id}`);
 			console.log(`${kleur.dim("Title:")}       ${chat.title || "(none)"}`);
@@ -204,20 +79,18 @@ chatsCommand
 				console.log(`${kleur.dim("Last active:")} ${chat.lastActivity}`);
 			}
 
-			// Participants
 			console.log(SEPARATOR);
-			console.log(kleur.bold(`👥 Participants (${chat.participants.total})`));
+			console.log(kleur.bold(`Participants (${chat.participants.total})`));
 			for (const p of chat.participants.items) {
 				const name = p.fullName || p.username || p.id;
 				const self = p.isSelf ? kleur.cyan(" (you)") : "";
-				console.log(`   • ${name}${self}`);
-				if (p.phoneNumber) console.log(kleur.dim(`     📱 ${p.phoneNumber}`));
-				if (p.email) console.log(kleur.dim(`     📧 ${p.email}`));
+				console.log(`   - ${name}${self}`);
+				if (p.phoneNumber) console.log(kleur.dim(`     ${p.phoneNumber}`));
+				if (p.email) console.log(kleur.dim(`     ${p.email}`));
 			}
 			if (chat.participants.hasMore) {
-				console.log(
-					kleur.dim(`   ... and ${chat.participants.total - chat.participants.items.length} more`),
-				);
+				const remaining = chat.participants.total - chat.participants.items.length;
+				console.log(kleur.dim(`   ... and ${remaining} more`));
 			}
 			console.log();
 		} catch (error) {
@@ -225,7 +98,6 @@ chatsCommand
 		}
 	});
 
-// Create subcommand
 chatsCommand
 	.command("create")
 	.description("Create a new chat")
@@ -238,15 +110,11 @@ chatsCommand
 		try {
 			const client = getClient();
 
-			// Auto-detect type if not specified
-			let chatType: "single" | "group" = options.type;
-			if (!chatType) {
-				chatType = participantIds.length === 1 ? "single" : "group";
-			}
+			const chatType: "single" | "group" =
+				options.type || (participantIds.length === 1 ? "single" : "group");
 
-			// Validate
 			if (chatType === "single" && participantIds.length !== 1) {
-				console.error(kleur.red("❌ Single chats require exactly 1 participant"));
+				console.error(kleur.red("Single chats require exactly 1 participant"));
 				process.exit(1);
 			}
 
@@ -258,28 +126,154 @@ chatsCommand
 				messageText: options.message,
 			});
 
-			console.log(kleur.green("✓ Chat created successfully!"));
+			console.log(kleur.green("Chat created successfully!"));
 			console.log(kleur.dim(`   Chat ID: ${result.chatID}`));
 		} catch (error) {
 			handleError(error);
 		}
 	});
 
+function parseDateOption(value: string | undefined, optionName: string): string | undefined {
+	if (!value) return undefined;
+	try {
+		return parseRelativeDate(value);
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : "Unknown";
+		console.error(kleur.red(`Invalid ${optionName} date: ${msg}`));
+		process.exit(1);
+	}
+}
+
+function resolveChatId(chatId: string): string {
+	const config = getConfig();
+	const resolved = resolveAlias(chatId, config);
+
+	if (resolved) return resolved;
+
+	if (isValidChatId(chatId)) return chatId;
+
+	console.error(kleur.red(`Invalid chat ID or alias: ${chatId}`));
+	process.exit(1);
+}
+
+interface SearchParams {
+	query?: string;
+	inbox?: "primary" | "low-priority" | "archive";
+	type?: "single" | "group";
+	scope?: "titles" | "participants";
+	unreadOnly?: boolean;
+	lastActivityAfter?: string;
+	lastActivityBefore?: string;
+}
+
+async function fetchChats(
+	client: ReturnType<typeof getClient>,
+	options: {
+		search?: string;
+		inbox: string;
+		type: string;
+		scope?: string;
+		unreadOnly?: boolean;
+	},
+	limit: number,
+	activityAfter?: string,
+	activityBefore?: string,
+): Promise<ChatListResponse[]> {
+	const needsSearch =
+		options.search ||
+		options.inbox !== "all" ||
+		options.type !== "any" ||
+		options.unreadOnly ||
+		activityAfter ||
+		activityBefore;
+
+	const chats: ChatListResponse[] = [];
+
+	if (!needsSearch) {
+		for await (const chat of client.chats.list()) {
+			chats.push(chat);
+			if (chats.length >= limit) break;
+		}
+		return chats;
+	}
+
+	const params: SearchParams = {};
+	if (options.search) params.query = options.search;
+	if (options.inbox !== "all") params.inbox = options.inbox as SearchParams["inbox"];
+	if (options.type !== "any") params.type = options.type as SearchParams["type"];
+	if (options.scope) params.scope = options.scope as SearchParams["scope"];
+	if (options.unreadOnly) params.unreadOnly = true;
+	if (activityAfter) params.lastActivityAfter = activityAfter;
+	if (activityBefore) params.lastActivityBefore = activityBefore;
+
+	for await (const chat of client.chats.search(params)) {
+		chats.push(chat as ChatListResponse);
+		if (chats.length >= limit) break;
+	}
+
+	return chats;
+}
+
+interface ListOptions {
+	search?: string;
+	inbox: string;
+	type: string;
+	unreadOnly?: boolean;
+	activityAfter?: string;
+	activityBefore?: string;
+}
+
+function printChatList(
+	chats: ChatListResponse[],
+	options: ListOptions,
+	activityAfter?: string,
+	activityBefore?: string,
+): void {
+	let title = "Inbox";
+	if (options.search) {
+		title = `Chats matching "${options.search}"`;
+	} else if (options.inbox === "all") {
+		title = "All Chats";
+	} else if (options.inbox === "archive") {
+		title = "Archived Chats";
+	} else if (options.inbox === "low-priority") {
+		title = "Low Priority Chats";
+	}
+
+	const filters: string[] = [];
+	if (options.type !== "any") filters.push(options.type);
+	if (options.unreadOnly) filters.push("unread");
+	if (activityAfter) filters.push(`after ${options.activityAfter}`);
+	if (activityBefore) filters.push(`before ${options.activityBefore}`);
+
+	const filterSuffix = filters.length > 0 ? kleur.dim(` [${filters.join(", ")}]`) : "";
+
+	console.log(kleur.bold(`\n${title} (${chats.length})`) + filterSuffix);
+	console.log(SEPARATOR);
+
+	for (let i = 0; i < chats.length; i++) {
+		const chat = chats[i];
+		const num = kleur.dim(`${i + 1}.`);
+		const name = kleur.bold(chat.title || chat.description || "Unknown");
+		const network = kleur.dim(`[${chat.network || chat.accountID}]`);
+		const unread = chat.unreadCount ? kleur.red(` (${chat.unreadCount} unread)`) : "";
+
+		console.log(`${num} ${name} ${network}${unread}`);
+		console.log(kleur.dim(`   ID: ${chat.id}`));
+
+		if (chat.preview?.text) {
+			const preview = truncate(chat.preview.text, 50);
+			console.log(kleur.dim(`   ${preview}`));
+		}
+
+		if (i < chats.length - 1) {
+			console.log(SEPARATOR);
+		}
+	}
+	console.log();
+}
+
 function truncate(text: string, maxLength: number): string {
 	if (text.length <= maxLength) return text;
 	return `${text.slice(0, maxLength - 3)}...`;
-}
-
-function handleError(error: unknown): void {
-	if (error instanceof Error) {
-		if (error.message.includes("ECONNREFUSED")) {
-			console.error(kleur.red("❌ Cannot connect to Beeper Desktop API"));
-			console.error(kleur.dim("   Make sure Beeper Desktop is running with API enabled."));
-		} else {
-			console.error(kleur.red(`❌ Error: ${error.message}`));
-		}
-	} else {
-		console.error(kleur.red("❌ Unknown error occurred"));
-	}
-	process.exit(1);
 }

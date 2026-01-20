@@ -21,10 +21,10 @@ authCommand
 	.description("Show current configuration")
 	.action(() => {
 		const config = getConfig();
-		const configPath = getConfigPath();
 
-		console.log(kleur.bold("\n🔐 Beeper CLI Configuration\n"));
+		console.log(kleur.bold("\n Beeper CLI Configuration\n"));
 
+		// Display token status
 		if (process.env.BEEPER_TOKEN) {
 			console.log(`  Token: ${kleur.green("set")} ${kleur.dim("(from BEEPER_TOKEN env)")}`);
 		} else if (config.token) {
@@ -34,15 +34,22 @@ authCommand
 			console.log(`  Token: ${kleur.red("not set")}`);
 		}
 
-		const url = process.env.BEEPER_URL || config.baseUrl || "http://localhost:23373";
-		const urlSource = process.env.BEEPER_URL
-			? "(from BEEPER_URL env)"
-			: config.baseUrl
-				? ""
-				: "(default)";
+		// Display URL with source indication
+		let url: string;
+		let urlSource: string;
+		if (process.env.BEEPER_URL) {
+			url = process.env.BEEPER_URL;
+			urlSource = "(from BEEPER_URL env)";
+		} else if (config.baseUrl) {
+			url = config.baseUrl;
+			urlSource = "";
+		} else {
+			url = "http://localhost:23373";
+			urlSource = "(default)";
+		}
 		console.log(`  URL:   ${kleur.cyan(url)} ${kleur.dim(urlSource)}`);
 
-		console.log(kleur.dim(`\n  Config file: ${configPath}`));
+		console.log(kleur.dim(`\n  Config file: ${getConfigPath()}`));
 	});
 
 authCommand

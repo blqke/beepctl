@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import kleur from "kleur";
 import { getClient } from "../lib/client.js";
+import { handleError } from "../lib/errors.js";
 
 export const accountsCommand = new Command("accounts")
 	.description("List connected accounts")
@@ -15,30 +16,14 @@ export const accountsCommand = new Command("accounts")
 				return;
 			}
 
-			console.log(kleur.bold(`\n📱 Connected Accounts (${accounts.length})\n`));
+			console.log(kleur.bold(`\nConnected Accounts (${accounts.length})\n`));
 
 			for (const account of accounts) {
 				const name = account.user?.fullName || account.user?.username || account.accountID;
-				const network = kleur.cyan(account.network);
-				console.log(`  ${network} ${kleur.bold(name)}`);
+				console.log(`  ${kleur.cyan(account.network)} ${kleur.bold(name)}`);
 				console.log(kleur.dim(`    ID: ${account.accountID}\n`));
 			}
 		} catch (error) {
 			handleError(error);
 		}
 	});
-
-function handleError(error: unknown): void {
-	if (error instanceof Error) {
-		if (error.message.includes("ECONNREFUSED")) {
-			console.error(kleur.red("❌ Cannot connect to Beeper Desktop API"));
-			console.error(kleur.dim("   Make sure Beeper Desktop is running with API enabled."));
-			console.error(kleur.dim("   Settings → Developers → Enable Beeper Desktop API"));
-		} else {
-			console.error(kleur.red(`❌ Error: ${error.message}`));
-		}
-	} else {
-		console.error(kleur.red("❌ Unknown error occurred"));
-	}
-	process.exit(1);
-}

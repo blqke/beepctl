@@ -3,6 +3,7 @@ import kleur from "kleur";
 import { isValidChatId, resolveAlias } from "../lib/aliases.js";
 import { getClient } from "../lib/client.js";
 import { getConfig } from "../lib/config.js";
+import { handleError } from "../lib/errors.js";
 
 export const focusCommand = new Command("focus")
 	.description("Bring Beeper Desktop to foreground")
@@ -13,22 +14,7 @@ export const focusCommand = new Command("focus")
 	.action(async (chatId: string | undefined, options) => {
 		try {
 			const client = getClient();
-			const config = getConfig();
-
-			let targetChatId: string | undefined;
-
-			if (chatId) {
-				const resolved = resolveAlias(chatId, config);
-				if (resolved) {
-					targetChatId = resolved;
-				} else if (isValidChatId(chatId)) {
-					targetChatId = chatId;
-				} else {
-					console.error(kleur.red(`❌ Invalid chat ID or alias: ${chatId}`));
-					console.error(kleur.dim("   Chat IDs should start with '!'"));
-					process.exit(1);
-				}
-			}
+			const targetChatId = chatId ? resolveChatId(chatId) : undefined;
 
 			const result = await client.focus({
 				chatID: targetChatId,
@@ -38,12 +24,12 @@ export const focusCommand = new Command("focus")
 			});
 
 			if (result.success) {
-				console.log(kleur.green("✓ Beeper Desktop focused"));
+				console.log(kleur.green("Beeper Desktop focused"));
 				if (targetChatId) {
 					console.log(kleur.dim(`   Chat: ${targetChatId}`));
 				}
 			} else {
-				console.error(kleur.red("❌ Failed to focus Beeper Desktop"));
+				console.error(kleur.red("Failed to focus Beeper Desktop"));
 				process.exit(1);
 			}
 		} catch (error) {
@@ -51,16 +37,15 @@ export const focusCommand = new Command("focus")
 		}
 	});
 
-function handleError(error: unknown): void {
-	if (error instanceof Error) {
-		if (error.message.includes("ECONNREFUSED")) {
-			console.error(kleur.red("❌ Cannot connect to Beeper Desktop API"));
-			console.error(kleur.dim("   Make sure Beeper Desktop is running with API enabled."));
-		} else {
-			console.error(kleur.red(`❌ Error: ${error.message}`));
-		}
-	} else {
-		console.error(kleur.red("❌ Unknown error occurred"));
-	}
+function resolveChatId(chatId: string): string {
+	const config = getConfig();
+	const resolved = resolveAlias(chatId, config);
+
+	if (resolved) return resolved;
+
+	if (isValidChatId(chatId)) return chatId;
+
+	console.error(kleur.red(`Invalid chat ID or alias: ${chatId}`));
+	console.error(kleur.dim("   Chat IDs should start with '!'"));
 	process.exit(1);
 }

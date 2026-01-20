@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import kleur from "kleur";
 import { getClient } from "../lib/client.js";
+import { handleError } from "../lib/errors.js";
 
 const SEPARATOR = kleur.dim("─".repeat(50));
 
@@ -14,7 +15,6 @@ contactsCommand
 	.action(async (accountId: string, query: string) => {
 		try {
 			const client = getClient();
-
 			const result = await client.accounts.contacts.search(accountId, { query });
 
 			if (result.items.length === 0) {
@@ -22,7 +22,7 @@ contactsCommand
 				return;
 			}
 
-			console.log(kleur.bold(`\n🔍 Contacts matching "${query}" (${result.items.length})`));
+			console.log(kleur.bold(`\nContacts matching "${query}" (${result.items.length})`));
 			console.log(SEPARATOR);
 
 			for (let i = 0; i < result.items.length; i++) {
@@ -35,15 +35,9 @@ contactsCommand
 				console.log(`${num} ${name}${self}${blocked}`);
 				console.log(kleur.dim(`   ID: ${user.id}`));
 
-				if (user.username) {
-					console.log(kleur.dim(`   @${user.username}`));
-				}
-				if (user.phoneNumber) {
-					console.log(kleur.dim(`   📱 ${user.phoneNumber}`));
-				}
-				if (user.email) {
-					console.log(kleur.dim(`   📧 ${user.email}`));
-				}
+				if (user.username) console.log(kleur.dim(`   @${user.username}`));
+				if (user.phoneNumber) console.log(kleur.dim(`   ${user.phoneNumber}`));
+				if (user.email) console.log(kleur.dim(`   ${user.email}`));
 
 				if (i < result.items.length - 1) {
 					console.log(SEPARATOR);
@@ -54,20 +48,3 @@ contactsCommand
 			handleError(error);
 		}
 	});
-
-function handleError(error: unknown): void {
-	if (error instanceof Error) {
-		if (error.message.includes("ECONNREFUSED")) {
-			console.error(kleur.red("❌ Cannot connect to Beeper Desktop API"));
-			console.error(kleur.dim("   Make sure Beeper Desktop is running with API enabled."));
-		} else if (error.message.includes("404")) {
-			console.error(kleur.red("❌ Account not found"));
-			console.error(kleur.dim("   Run 'beep accounts' to see available accounts."));
-		} else {
-			console.error(kleur.red(`❌ Error: ${error.message}`));
-		}
-	} else {
-		console.error(kleur.red("❌ Unknown error occurred"));
-	}
-	process.exit(1);
-}
