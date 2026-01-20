@@ -1,5 +1,8 @@
 # beepctl 🐝
 
+[![npm version](https://img.shields.io/npm/v/beepctl.svg)](https://www.npmjs.com/package/beepctl)
+[![CI](https://github.com/blqke/beepctl/actions/workflows/ci.yml/badge.svg)](https://github.com/blqke/beepctl/actions/workflows/ci.yml)
+
 CLI for [Beeper Desktop API](https://developers.beeper.com/desktop-api) - unified messaging from your terminal. Give your AI agents the power to chat across all your messaging platforms.
 
 > **Disclaimer:** This is an unofficial project. Not affiliated with, endorsed by, or sponsored by Beeper. The Beeper Desktop API is still in beta — expect breaking changes.
