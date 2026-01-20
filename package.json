@@ -1,12 +1,12 @@
 {
   "name": "beepctl",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI for Beeper Desktop API - unified messaging from terminal",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "beep": "dist/cli.js"
+    "beepctl": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -21,7 +21,7 @@
     "lint:fix": "biome check --write . && oxlint --fix",
     "lint:biome": "biome check .",
     "lint:oxlint": "oxlint",
-    "binary": "bun build --compile src/cli.ts --outfile beep",
+    "binary": "bun build --compile src/cli.ts --outfile beepctl",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

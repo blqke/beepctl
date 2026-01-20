@@ -17,7 +17,7 @@ import { sendCommand } from "./commands/send.js";
 import { version } from "./version.js";
 
 program
-	.name("beep")
+	.name("beepctl")
 	.description(kleur.cyan("CLI for Beeper Desktop API - unified messaging from terminal"))
 	.version(version)
 	.addCommand(authCommand)

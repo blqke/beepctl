@@ -37,7 +37,7 @@ pnpm link --global
 5. Configure the CLI:
 
 ```bash
-beep auth set <your-token>
+beepctl auth set <your-token>
 # Or use environment variable
 export BEEPER_TOKEN=<your-token>
 ```
@@ -52,41 +52,41 @@ Config stored at `~/.config/beepcli/config.json` with token, base URL, and alias
 
 ```bash
 # Auth management
-beep auth show           # Check auth status
-beep auth set <token>    # Set API token
-beep auth clear          # Clear stored token
+beepctl auth show           # Check auth status
+beepctl auth set <token>    # Set API token
+beepctl auth clear          # Clear stored token
 
 # List connected accounts
-beep accounts
+beepctl accounts
 
 # List recent chats
-beep chats
-beep chats --limit 50
-beep chats --search "John"
+beepctl chats
+beepctl chats --limit 50
+beepctl chats --search "John"
 
 # Search messages and chats
-beep search "meeting tomorrow"
-beep search "deadline" --limit 10
-beep search "deadline" --chat work --sender me --after "1d ago"
-beep search "photo" --media image video
-beep search "discussion" --chat-type group --before "yesterday"
+beepctl search "meeting tomorrow"
+beepctl search "deadline" --limit 10
+beepctl search "deadline" --chat work --sender me --after "1d ago"
+beepctl search "photo" --media image video
+beepctl search "discussion" --chat-type group --before "yesterday"
 
 # Send messages
-beep send <chat-id> "Hello!"
-beep send myself "Quick note"  # Send to yourself
-beep send <chat-id> "Thanks!" --reply-to <message-id>  # Reply to message
+beepctl send <chat-id> "Hello!"
+beepctl send myself "Quick note"  # Send to yourself
+beepctl send <chat-id> "Thanks!" --reply-to <message-id>  # Reply to message
 
 # Archive/unarchive chats
-beep archive <chat-id>              # Archive a chat
-beep archive <chat-id> --unarchive  # Unarchive a chat
-beep archive work                   # Use alias to archive
+beepctl archive <chat-id>              # Archive a chat
+beepctl archive <chat-id> --unarchive  # Unarchive a chat
+beepctl archive work                   # Use alias to archive
 
 # Alias management (shortcuts for chat IDs)
-beep alias list                    # List all aliases
-beep alias add work <chat-id>      # Create alias
-beep alias show work               # Show alias value
-beep alias remove work             # Remove alias
-beep send work "Using alias!"      # Use alias in commands
+beepctl alias list                    # List all aliases
+beepctl alias add work <chat-id>      # Create alias
+beepctl alias show work               # Show alias value
+beepctl alias remove work             # Remove alias
+beepctl send work "Using alias!"      # Use alias in commands
 ```
 
 ### Search Filters
@@ -95,34 +95,34 @@ Filter search results with multiple options:
 
 ```bash
 # Filter by chat (supports aliases, space or comma-separated)
-beep search "hello" --chat work family
-beep search "test" --chat id1,id2,id3
+beepctl search "hello" --chat work family
+beepctl search "test" --chat id1,id2,id3
 
 # Filter by time range (relative dates)
-beep search "meeting" --after "1d ago" --before "1h ago"
-beep search "report" --after "yesterday"
+beepctl search "meeting" --after "1d ago" --before "1h ago"
+beepctl search "report" --after "yesterday"
 
 # Filter by sender
-beep search "question" --sender me        # Only my messages
-beep search "update" --sender others      # Messages from others
+beepctl search "question" --sender me        # Only my messages
+beepctl search "update" --sender others      # Messages from others
 
 # Filter by media type
-beep search "screenshot" --media image
-beep search "files" --media file link
+beepctl search "screenshot" --media image
+beepctl search "files" --media file link
 
 # Filter by chat type
-beep search "announcement" --chat-type group
-beep search "dm" --chat-type single
+beepctl search "announcement" --chat-type group
+beepctl search "dm" --chat-type single
 
 # Filter by account
-beep search "slack message" --account <account-id>
+beepctl search "slack message" --account <account-id>
 
 # Combine filters
-beep search "deploy" --chat work --sender others --after "1d ago" --media link
+beepctl search "deploy" --chat work --sender others --after "1d ago" --media link
 
 # Include/exclude options
-beep search "todo" --include-low-priority
-beep search "important" --exclude-muted
+beepctl search "todo" --include-low-priority
+beepctl search "important" --exclude-muted
 ```
 
 **Time formats:** `1h ago`, `2d ago`, `3w ago`, `1mo ago`, `yesterday`, `today`
