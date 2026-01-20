@@ -35,5 +35,23 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@10.11.0"
+  "packageManager": "pnpm@10.11.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blqke/beepcli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blqke/beepcli/issues"
+  },
+  "homepage": "https://github.com/blqke/beepcli#readme",
+  "author": "blqke",
+  "keywords": [
+    "cli",
+    "beeper",
+    "messaging",
+    "chat",
+    "terminal",
+    "matrix",
+    "clawdbot"
+  ]
 }

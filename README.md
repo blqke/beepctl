@@ -179,6 +179,8 @@ src/
 
 Inspired by [beeper-cli](https://github.com/krausefx/beeper-cli) by [@krausefx](https://github.com/krausefx).
 
+The author uses beepcli alongside [clawdbot](https://github.com/blqke/clawdbot).
+
 ## License
 
 MIT
