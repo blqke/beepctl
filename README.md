@@ -34,7 +34,8 @@ pnpm link --global
 2. Go to **Settings → Developers**
 3. Enable **Beeper Desktop API**
 4. Click **"+"** next to "Approved connections" to create a token
-5. Configure the CLI:
+5. *(Optional)* Enable **"Allow sensitive actions"** on the token to send messages
+6. Configure the CLI:
 
 ```bash
 beepctl auth set <your-token>
