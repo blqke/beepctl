@@ -1,6 +1,6 @@
 {
   "name": "beepctl",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "CLI for Beeper Desktop API - unified messaging from terminal",
   "license": "MIT",
   "type": "module",

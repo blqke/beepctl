@@ -1,4 +1,4 @@
-# Contributing to beepcli
+# Contributing to beepctl
 
 Thanks for your interest in contributing!
 
@@ -12,7 +12,7 @@ Thanks for your interest in contributing!
 
 ```bash
 git clone https://github.com/blqke/beepctl.git
-cd beepcli
+cd beepctl
 pnpm install
 pnpm run build
 ```
