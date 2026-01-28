@@ -284,6 +284,30 @@ src/
 - **Bun** for standalone binary compilation
 - **@beeper/desktop-api** SDK
 
+## AI Agent Integration
+
+beepctl includes an [Agent Skill](https://agentskills.io) for AI coding assistants.
+
+**Supported agents:** Claude Code, Cursor, VS Code, GitHub Copilot, OpenAI Codex, Gemini CLI, Goose, Amp, and [25+ more](https://agentskills.io).
+
+### Install via npx skills
+
+```bash
+npx skills add blqke/beepctl
+```
+
+### Manual install (Claude Code)
+
+```bash
+cp -r skills/beepctl ~/.claude/skills/
+```
+
+### Manual install (Cursor)
+
+```bash
+cp -r skills/beepctl ~/.cursor/skills/
+```
+
 ## Acknowledgments
 
 Inspired by [beeper-cli](https://github.com/krausefx/beeper-cli) by [@krausefx](https://github.com/krausefx).
