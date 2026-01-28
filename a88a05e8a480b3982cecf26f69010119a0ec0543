@@ -1,0 +1,21 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.37",
+  "base_commit_sha": "a88a05e8a480b3982cecf26f69010119a0ec0543",
+  "prompts": {
+    "a6890e7f01d2ea71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08163a5b-f178-451b-9498-2159550b65d2",
+        "model": "claude-opus-4-5-20251101"
+      },
+      "human_author": "Jules LIBERT <jules.lib@gmail.com>",
+      "messages": [],
+      "total_additions": 195,
+      "total_deletions": 0,
+      "accepted_lines": 195,
+      "overriden_lines": 0
+    }
+  }
+}
